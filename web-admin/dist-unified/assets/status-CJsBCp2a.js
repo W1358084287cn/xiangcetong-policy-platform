@@ -1,0 +1,1 @@
+var e={PENDING_VILLAGE:`待村级审核`,PENDING_TOWN:`待镇级审核`,APPROVED:`已通过`,PENDING_DISBURSE:`待发放`,DISBURSED:`已发放`,REJECTED:`已驳回`};function t(t){return e[t]||t||`—`}var n={VILLAGER:`村民`,VILLAGE_ADMIN:`村级管理员`,TOWN_ADMIN:`镇级管理员`,SYS_ADMIN:`系统管理员`};function r(e){return n[e]||e||`—`}export{t as n,r,e as t};

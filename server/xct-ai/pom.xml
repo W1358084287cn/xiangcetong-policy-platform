@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.xiangcetong</groupId>
+        <artifactId>xiangcetong-server</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>xct-ai</artifactId>
+    <name>xct-ai</name>
+    <description>AI模块：Spring AI + RAG知识库 + DeepSeek对话</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.xiangcetong</groupId>
+            <artifactId>xct-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!--
+          pgvector 向量库驱动（RAG 检索增强专用）。
+          2026-10-18 修复线上崩溃：PgVectorConfig 用字符串 "org.postgresql.Driver"
+          设置 HikariCP 驱动（编译期不引用该类，所以没加依赖也能编译通过），
+          但运行期加载不到驱动 → ragDataSource Bean 创建失败 → 整个应用启动崩溃、
+          容器无限重启。服务器 pgvector 容器是 PostgreSQL 17，驱动选 42.7.x。
+        -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.4</version>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- Spring AI：OpenAI 兼容协议（对接硅基流动，涵盖 DeepSeek 对话 + BGE 向量化） -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-openai</artifactId>
+        </dependency>
+        <!-- Apache PDFBox 解析 PDF -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>3.0.3</version>
+        </dependency>
+        <!-- Apache POI 解析 Word -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.3.0</version>
+        </dependency>
+        <!-- Jackson JSON 处理向量数组 -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+    </dependencies>
+</project>

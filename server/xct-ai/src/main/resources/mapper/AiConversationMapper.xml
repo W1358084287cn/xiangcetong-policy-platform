@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiangcetong.ai.mapper.AiConversationMapper">
+
+    <!-- 建表（仅首次执行，幂等） -->
+    <update id="createTableIfNotExists">
+        CREATE TABLE IF NOT EXISTS ai_conversation (
+            id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+            user_id     BIGINT       NOT NULL COMMENT '村民ID',
+            title       VARCHAR(100) NOT NULL DEFAULT '新对话' COMMENT '对话标题',
+            pinned      TINYINT      NOT NULL DEFAULT 0 COMMENT '置顶标记',
+            msg_count   INT          NOT NULL DEFAULT 0 COMMENT '消息总数',
+            last_action VARCHAR(60)  DEFAULT NULL COMMENT '最近动作类型',
+            draft_data  TEXT         DEFAULT NULL COMMENT '申报草稿JSON',
+            created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_user_pinned (user_id, pinned DESC, updated_at DESC)
+        ) COMMENT 'AI 管家对话会话'
+    </update>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ai_conversation (user_id, title)
+        VALUES (#{userId}, #{title})
+    </insert>
+
+    <select id="listByUserId" resultType="com.xiangcetong.ai.entity.AiConversation">
+        SELECT id, user_id AS userId, title, pinned, msg_count AS msgCount,
+               last_action AS lastAction, created_at AS createdAt, updated_at AS updatedAt
+        FROM ai_conversation
+        WHERE user_id = #{userId}
+        ORDER BY pinned DESC, updated_at DESC
+    </select>
+
+    <select id="selectByIdAndUserId" resultType="com.xiangcetong.ai.entity.AiConversation">
+        SELECT id, user_id AS userId, title, pinned, msg_count AS msgCount,
+               last_action AS lastAction, created_at AS createdAt, updated_at AS updatedAt
+        FROM ai_conversation
+        WHERE id = #{id} AND user_id = #{userId}
+    </select>
+
+    <update id="updateTitle">
+        UPDATE ai_conversation SET title = #{title} WHERE id = #{id}
+    </update>
+
+    <update id="togglePinned">
+        UPDATE ai_conversation SET pinned = #{pinned} WHERE id = #{id}
+    </update>
+
+    <update id="incrementMsgCount">
+        UPDATE ai_conversation SET msg_count = msg_count + 1, updated_at = NOW() WHERE id = #{id}
+    </update>
+
+    <update id="updateLastAction">
+        UPDATE ai_conversation SET last_action = #{lastAction}, updated_at = NOW() WHERE id = #{id}
+    </update>
+
+    <delete id="deleteByIdAndUserId">
+        DELETE FROM ai_conversation WHERE id = #{id} AND user_id = #{userId}
+    </delete>
+
+    <delete id="deleteMessagesByConversationId">
+        DELETE FROM ai_chat_log WHERE conversation_id = #{conversationId}
+    </delete>
+
+    <update id="touch">
+        UPDATE ai_conversation SET updated_at = NOW() WHERE id = #{id}
+    </update>
+
+    <update id="saveDraftData">
+        UPDATE ai_conversation SET draft_data = #{draftData}, updated_at = NOW() WHERE id = #{id}
+    </update>
+
+    <update id="clearDraftData">
+        UPDATE ai_conversation SET draft_data = NULL, updated_at = NOW() WHERE id = #{id}
+    </update>
+
+    <select id="selectDraftData" resultType="string">
+        SELECT draft_data FROM ai_conversation WHERE id = #{id}
+    </select>
+
+</mapper>

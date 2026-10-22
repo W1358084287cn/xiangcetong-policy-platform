@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiangcetong.notice.mapper.NoticeMapper">
+
+    <!-- 通知公告表字段映射；全部条件使用 #{} 预编译 -->
+    <sql id="Cols">
+        id, title, content, status, sort, created_by, created_at, updated_at
+    </sql>
+
+    <select id="findById" resultType="com.xiangcetong.notice.entity.Notice">
+        SELECT <include refid="Cols"/> FROM notice WHERE id = #{id} LIMIT 1
+    </select>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(1) FROM notice
+    </select>
+
+    <select id="list" resultType="com.xiangcetong.notice.entity.Notice">
+        SELECT <include refid="Cols"/> FROM notice
+        ORDER BY sort DESC, id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="listActive" resultType="com.xiangcetong.notice.entity.Notice">
+        SELECT <include refid="Cols"/> FROM notice
+        WHERE status = 'ONLINE'
+        ORDER BY sort DESC, id DESC
+        LIMIT #{limit}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO notice (title, content, status, sort, created_by, created_at, updated_at)
+        VALUES (#{title}, #{content,jdbcType=VARCHAR}, #{status}, #{sort}, #{createdBy}, NOW(), NOW())
+    </insert>
+
+    <update id="update">
+        UPDATE notice
+        SET title = #{title},
+            content = #{content,jdbcType=VARCHAR},
+            status = #{status},
+            sort = #{sort},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM notice WHERE id = #{id}
+    </delete>
+</mapper>

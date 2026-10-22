@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiangcetong.user.mapper.SysUserMapper">
+
+    <sql id="BaseCols">
+        id, phone, username, password_hash, name, role,
+        county_code, town_code, village_code, created_at
+    </sql>
+
+    <select id="findByPhone" resultType="com.xiangcetong.user.entity.SysUser">
+        SELECT <include refid="BaseCols"/>
+        FROM sys_user
+        WHERE phone = #{phone}
+        LIMIT 1
+    </select>
+
+    <select id="findById" resultType="com.xiangcetong.user.entity.SysUser">
+        SELECT <include refid="BaseCols"/>
+        FROM sys_user
+        WHERE id = #{id}
+        LIMIT 1
+    </select>
+
+    <select id="findByUsernameAndRole" resultType="com.xiangcetong.user.entity.SysUser">
+        SELECT <include refid="BaseCols"/>
+        FROM sys_user
+        WHERE username = #{username}
+          AND role = #{role}
+        LIMIT 1
+    </select>
+
+    <update id="updatePassword">
+        UPDATE sys_user
+        SET password_hash = #{passwordHash}
+        WHERE id = #{id}
+    </update>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_user
+        (phone, password_hash, name, role, county_code, town_code, village_code, created_at)
+        VALUES
+        (#{phone}, #{passwordHash}, #{name}, #{role},
+         #{countyCode}, #{townCode}, #{villageCode}, NOW())
+    </insert>
+
+    <update id="updateVillageCode">
+        UPDATE sys_user
+        SET village_code = #{villageCode}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateNamePhone">
+        UPDATE sys_user
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="phone != null">phone = #{phone},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="countAdmin" resultType="long">
+        SELECT COUNT(1) FROM sys_user
+        <where>
+            <if test="role != null and role != ''">
+                AND role = #{role}
+            </if>
+            <if test="phone != null and phone != ''">
+                AND phone LIKE CONCAT('%', #{phone}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="listAdmin" resultType="com.xiangcetong.user.entity.SysUser">
+        SELECT <include refid="BaseCols"/>
+        FROM sys_user
+        <where>
+            <if test="role != null and role != ''">
+                AND role = #{role}
+            </if>
+            <if test="phone != null and phone != ''">
+                AND phone LIKE CONCAT('%', #{phone}, '%')
+            </if>
+        </where>
+        ORDER BY id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <delete id="deleteById">
+        DELETE FROM sys_user WHERE id = #{id}
+    </delete>
+
+    <update id="fixAdminPassword">
+        UPDATE sys_user
+        SET password_hash = #{passwordHash}
+        WHERE username = 'admin'
+          AND role IN ('VILLAGE_ADMIN', 'TOWN_ADMIN', 'SYS_ADMIN')
+    </update>
+</mapper>

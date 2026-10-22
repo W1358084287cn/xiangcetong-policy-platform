@@ -1,0 +1,28 @@
+{
+  "name": "web-admin",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --mode village --port 5174 --host",
+    "dev:town": "vite --mode town --port 5175 --host",
+    "dev:sys": "vite --mode sys --port 5176 --host",
+    "dev:unified": "vite --mode unified --port 5177 --host",
+    "build": "vite build --mode village --outDir dist-village",
+    "build:town": "vite build --mode town --outDir dist-town",
+    "build:sys": "vite build --mode sys --outDir dist-sys",
+    "build:unified": "vite build --mode unified --base=/admin/ --outDir dist-unified",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.2",
+    "axios": "^1.20.0",
+    "element-plus": "^2.14.7",
+    "vue": "^3.5.42",
+    "vue-router": "^5.4.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.8",
+    "vite": "^8.3.0"
+  }
+}

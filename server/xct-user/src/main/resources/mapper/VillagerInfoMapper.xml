@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiangcetong.user.mapper.VillagerInfoMapper">
+
+    <select id="findByUserId" resultType="com.xiangcetong.user.entity.VillagerInfo">
+        SELECT id, user_id, id_number, id_front, id_back, county_name, town_name, village_name,
+               plant_type, bank_card, bank_name, plant_area,
+               subject_type, labor_count, farm_years,
+               is_veteran_family, is_monitor_household,
+               secondary_plant_type, irrigated_area, has_land_cert,
+               livestock_type, livestock_count,
+               has_manure_facility, need_machinery, machinery_type, has_grain_insurance,
+               updated_at
+        FROM villager_info
+        WHERE user_id = #{userId}
+        LIMIT 1
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO villager_info
+        (user_id, id_number, id_front, id_back, county_name, town_name, village_name, plant_type, bank_card, bank_name, plant_area,
+         subject_type, labor_count, farm_years,
+         is_veteran_family, is_monitor_household,
+         secondary_plant_type, irrigated_area, has_land_cert,
+         livestock_type, livestock_count,
+         has_manure_facility, need_machinery, machinery_type, has_grain_insurance,
+         updated_at)
+        VALUES
+        (#{userId}, #{idNumber}, #{idFront}, #{idBack}, #{countyName}, #{townName}, #{villageName},
+         #{plantType}, #{bankCard}, #{bankName}, #{plantArea},
+         #{subjectType}, #{laborCount}, #{farmYears},
+         #{isVeteranFamily}, #{isMonitorHousehold},
+         #{secondaryPlantType}, #{irrigatedArea}, #{hasLandCert},
+         #{livestockType}, #{livestockCount},
+         #{hasManureFacility}, #{needMachinery}, #{machineryType}, #{hasGrainInsurance},
+         NOW())
+    </insert>
+
+    <update id="update">
+        UPDATE villager_info
+        <set>
+            <if test="idNumber != null">id_number = #{idNumber},</if>
+            <if test="idFront != null">id_front = #{idFront},</if>
+            <if test="idBack != null">id_back = #{idBack},</if>
+            <if test="countyName != null">county_name = #{countyName},</if>
+            <if test="townName != null">town_name = #{townName},</if>
+            <if test="villageName != null">village_name = #{villageName},</if>
+            <if test="plantType != null">plant_type = #{plantType},</if>
+            <if test="bankCard != null">bank_card = #{bankCard},</if>
+            <if test="bankName != null">bank_name = #{bankName},</if>
+            <if test="plantArea != null">plant_area = #{plantArea},</if>
+            <!-- Integer 用 != null，保证 0 也能写入 -->
+            <if test="subjectType != null">subject_type = #{subjectType},</if>
+            <if test="laborCount != null">labor_count = #{laborCount},</if>
+            <if test="farmYears != null">farm_years = #{farmYears},</if>
+            <if test="isVeteranFamily != null">is_veteran_family = #{isVeteranFamily},</if>
+            <if test="isMonitorHousehold != null">is_monitor_household = #{isMonitorHousehold},</if>
+            <if test="secondaryPlantType != null">secondary_plant_type = #{secondaryPlantType},</if>
+            <if test="irrigatedArea != null">irrigated_area = #{irrigatedArea},</if>
+            <if test="hasLandCert != null">has_land_cert = #{hasLandCert},</if>
+            <if test="livestockType != null">livestock_type = #{livestockType},</if>
+            <if test="livestockCount != null">livestock_count = #{livestockCount},</if>
+            <if test="hasManureFacility != null">has_manure_facility = #{hasManureFacility},</if>
+            <if test="needMachinery != null">need_machinery = #{needMachinery},</if>
+            <if test="machineryType != null">machinery_type = #{machineryType},</if>
+            <if test="hasGrainInsurance != null">has_grain_insurance = #{hasGrainInsurance},</if>
+            updated_at = NOW()
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+</mapper>

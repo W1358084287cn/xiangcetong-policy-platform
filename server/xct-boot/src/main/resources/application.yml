@@ -1,0 +1,53 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: xiangcetong-server
+  datasource:
+    url: jdbc:mysql://localhost:3306/xiangcetong?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: ***
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+  ***:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 25MB
+  jackson:
+    date-format: yyyy-MM-dd'T'HH:mm:ss
+    time-zone: Asia/Shanghai
+    serialization:
+      write-dates-as-timestamps: false
+  # AI 配置由 AiClientConfiguration.java 从数据库 ai_config 表动态加载
+
+mybatis:
+  # classpath* 前缀：跨多个模块 jar 扫描 mapper XML（多模块后 XML 分散在各业务模块内）
+  mapper-locations: classpath*:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    default-enum-type-handler: org.apache.ibatis.type.EnumTypeHandler
+
+# JWT 与会话（演示环境写死密钥；生产应走环境变量）
+xiangcetong:
+  jwt:
+    secret: ***
+    expire-seconds: 86400
+  redis:
+    token-prefix: "xiangcetong:token:"
+  upload:
+    # 相对 JVM 工作目录！后端必须以 server/ 为工作目录启动（run.bat 已保证；
+    # IDE/Cursor 直接跑 main 时工作目录默认是项目根，图片会写到根 uploads/ 导致详情页 404）
+    dir: uploads
+    url-prefix: /uploads
+  # 政策匹配：MySQL 多条件 WHERE（见 docs/04-policy-match-algorithm.md，原 WRS 加权阈值已废弃）
+  policy-match:
+    hide-none-by-default: false
+
+logging:
+  level:
+    com.xiangcetong: INFO

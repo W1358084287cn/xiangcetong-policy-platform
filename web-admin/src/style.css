@@ -1,0 +1,84 @@
+/* 全局基础样式：乡策通管理端三端共用
+   清理 Vite 默认模板样式，提供管理后台所需的全屏布局与基础字体。
+*/
+:root {
+  /* Admin 端 Element Plus 覆盖变量：Golden Wheat & Prairie (Impeccable 规范) */
+  --el-color-primary: #d97706; /* 麦田金/琥珀橙 */
+  --el-color-success: #65a30d; /* 草原绿 */
+  --el-color-warning: #ea580c;
+  --el-color-danger: #b91c1c;
+  --el-color-info: #78350f;
+  
+  --el-bg-color-page: transparent; /* 设为透明，透出底层氛围光斑 */
+  --el-bg-color: rgba(255, 255, 255, 0.75); /* 毛玻璃组件底色 */
+  
+  --el-border-radius-base: 16px;
+  --el-border-radius-small: 12px;
+  --el-border-radius-round: 24px;
+  
+  --el-box-shadow-light: 0 4px 16px rgba(217, 119, 6, 0.08);
+  --el-box-shadow: 0 8px 24px rgba(217, 119, 6, 0.12);
+  --el-border-color-light: rgba(217, 119, 6, 0.15);
+
+  /* 全局背景色 */
+  --xct-bg: linear-gradient(170deg, #fffbeb 0%, #fef3c7 40%, #f0fdf4 100%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background: var(--xct-bg);
+  background-attachment: fixed;
+}
+
+body {
+  font-family: 'Fira Sans', system-ui, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  color: #451a03;
+  background-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 动效：统一错落入场 */
+@keyframes slideFadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 表格视觉升级：适配麦田主题 */
+.el-table {
+  --el-table-border-color: rgba(217, 119, 6, 0.1);
+  --el-table-header-bg-color: rgba(254, 243, 199, 0.6);
+  --el-table-header-text-color: #78350f;
+  background-color: transparent !important;
+}
+.el-table tr, .el-table th.el-table__cell, .el-table td.el-table__cell {
+  background-color: transparent !important;
+}
+.el-table__row {
+  transition: background-color 0.2s ease;
+}
+.el-table__row:hover > td {
+  background-color: rgba(254, 243, 199, 0.4) !important; /* 浅金悬停反馈 */
+}
+
+/* 卡片升级：毛玻璃效果 */
+.el-card {
+  border: 1px solid rgba(217, 119, 6, 0.2) !important;
+  background: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--el-box-shadow-light) !important;
+  transition: box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s;
+  animation: slideFadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}

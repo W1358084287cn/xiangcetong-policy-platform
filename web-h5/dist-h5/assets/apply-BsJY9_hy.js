@@ -1,0 +1,1 @@
+import{n as e}from"./request-BQttHdtN.js";function t(t){return e.post(`/apply/draft`,t)}function n(t){return e.get(`/apply/draft`,{params:{policyId:t}})}function r(t,n){return e.post(`/apply/${t}/submit-draft`,n||{})}function i(t={}){return e.get(`/apply/mine`,{params:{pageNum:1,pageSize:5,...t}})}function a(t){return e.get(`/apply/${t}`)}export{r as a,t as i,n,i as r,a as t};

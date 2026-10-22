@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiangcetong.apply.mapper.SubsidyApplyMapper">
+
+    <sql id="BaseCols">
+        a.id, a.user_id, a.policy_id, a.material_urls, a.material_data, a.status,
+        a.village_code, a.town_code,
+        a.first_by, a.first_opinion, a.first_at,
+        a.final_by, a.final_opinion, a.final_at,
+        a.disburse_amount, a.disburse_by, a.disburse_at,
+        a.created_at, a.updated_at
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO subsidy_apply
+        (user_id, policy_id, material_urls, material_data, status, village_code, town_code, created_at, updated_at)
+        VALUES
+        (#{userId}, #{policyId}, #{materialUrls}, #{materialData,jdbcType=VARCHAR}, #{status},
+         #{villageCode}, #{townCode}, NOW(), NOW())
+    </insert>
+
+    <select id="findById" resultType="com.xiangcetong.apply.entity.SubsidyApply">
+        SELECT <include refid="BaseCols"/>,
+               p.title AS policy_title,
+               p.category,
+               u.name AS applicant_name,
+               u.phone AS applicant_phone
+        FROM subsidy_apply a
+        LEFT JOIN subsidy_policy p ON p.id = a.policy_id
+        LEFT JOIN sys_user u ON u.id = a.user_id
+        WHERE a.id = #{id}
+        LIMIT 1
+    </select>
+
+    <select id="findDraftByUserPolicy" resultType="com.xiangcetong.apply.entity.SubsidyApply">
+        SELECT <include refid="BaseCols"/>, p.title AS policy_title, p.category
+        FROM subsidy_apply a
+        LEFT JOIN subsidy_policy p ON p.id = a.policy_id
+        WHERE a.user_id = #{userId}
+          AND a.policy_id = #{policyId}
+          AND a.status = 'DRAFT'
+        LIMIT 1
+    </select>
+
+    <!-- 进行中 / 待发放 / 已发放 / 已通过均不可再开草稿；REJECTED / DRAFT 不拦（草稿走 upsert） -->
+    <select id="countActiveByUserPolicy" resultType="long">
+        SELECT COUNT(1) FROM subsidy_apply
+        WHERE user_id = #{userId}
+          AND policy_id = #{policyId}
+          AND status IN
+        <foreach collection="activeStatuses" item="s" open="(" separator="," close=")">#{s}</foreach>
+    </select>
+
+    <update id="updateDraft">
+        UPDATE subsidy_apply
+        SET material_data = #{materialData,jdbcType=VARCHAR},
+            material_urls = #{materialUrls,jdbcType=VARCHAR},
+            updated_at = NOW()
+        WHERE id = #{id} AND status = 'DRAFT'
+    </update>
+
+    <update id="updateSubmitDraft">
+        UPDATE subsidy_apply
+        SET material_data = #{materialData,jdbcType=VARCHAR},
+            material_urls = #{materialUrls,jdbcType=VARCHAR},
+            status = #{status},
+            village_code = #{villageCode},
+            town_code = #{townCode},
+            updated_at = NOW()
+        WHERE id = #{id} AND status = 'DRAFT'
+    </update>
+
+    <select id="countMine" resultType="long">
+        SELECT COUNT(1) FROM subsidy_apply
+        WHERE user_id = #{userId}
+        <if test="status != null and status != ''">AND status = #{status}</if>
+    </select>
+
+    <select id="listMine" resultType="com.xiangcetong.apply.entity.SubsidyApply">
+        SELECT <include refid="BaseCols"/>, p.title AS policy_title, p.category
+        FROM subsidy_apply a
+        LEFT JOIN subsidy_policy p ON p.id = a.policy_id
+        WHERE a.user_id = #{userId}
+        <if test="status != null and status != ''">AND a.status = #{status}</if>
+        ORDER BY a.created_at DESC, a.id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countAdmin" resultType="long">
+        SELECT COUNT(1) FROM subsidy_apply a
+        <where>
+            AND a.status &lt;&gt; 'DRAFT'
+            <if test="status != null and status != ''">AND a.status = #{status}</if>
+            <if test="statusIn != null and statusIn.size() > 0">
+                AND a.status IN
+                <foreach collection="statusIn" item="s" open="(" separator="," close=")">#{s}</foreach>
+            </if>
+            <if test="villageCode != null and villageCode != ''">AND a.village_code = #{villageCode}</if>
+            <if test="townCode != null and townCode != ''">AND a.town_code = #{townCode}</if>
+        </where>
+    </select>
+
+    <select id="listAdmin" resultType="com.xiangcetong.apply.entity.SubsidyApply">
+        SELECT <include refid="BaseCols"/>,
+               p.title AS policy_title,
+               p.category,
+               u.name AS applicant_name,
+               u.phone AS applicant_phone
+        FROM subsidy_apply a
+        LEFT JOIN subsidy_policy p ON p.id = a.policy_id
+        LEFT JOIN sys_user u ON u.id = a.user_id
+        <where>
+            AND a.status &lt;&gt; 'DRAFT'
+            <if test="status != null and status != ''">AND a.status = #{status}</if>
+            <if test="statusIn != null and statusIn.size() > 0">
+                AND a.status IN
+                <foreach collection="statusIn" item="s" open="(" separator="," close=")">#{s}</foreach>
+            </if>
+            <if test="villageCode != null and villageCode != ''">AND a.village_code = #{villageCode}</if>
+            <if test="townCode != null and townCode != ''">AND a.town_code = #{townCode}</if>
+        </where>
+        ORDER BY a.created_at DESC, a.id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <update id="updateFirstAudit">
+        UPDATE subsidy_apply
+        SET status = #{status},
+            first_by = #{firstBy},
+            first_opinion = #{firstOpinion},
+            first_at = #{firstAt},
+            disburse_amount = #{disburseAmount},
+            disburse_at = #{disburseAt},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateFinalAudit">
+        UPDATE subsidy_apply
+        SET status = #{status},
+            final_by = #{finalBy},
+            final_opinion = #{finalOpinion},
+            final_at = #{finalAt},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateDisburse">
+        UPDATE subsidy_apply
+        SET status = #{status},
+            disburse_amount = #{disburseAmount},
+            disburse_by = #{disburseBy},
+            disburse_at = #{disburseAt},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <select id="countVillageStats" resultType="java.util.LinkedHashMap">
+        SELECT
+            (SELECT COUNT(1) FROM subsidy_apply
+             WHERE village_code = #{villageCode} AND status = 'PENDING_VILLAGE') AS pendingCount,
+            (SELECT COUNT(1) FROM subsidy_apply
+             WHERE village_code = #{villageCode} AND first_at IS NOT NULL
+               AND first_at &gt;= #{todayStart} AND first_at &lt; #{tomorrowStart}) AS todayCount,
+            (SELECT COUNT(1) FROM subsidy_apply
+             WHERE village_code = #{villageCode} AND first_at IS NOT NULL
+               AND first_at &gt;= #{monthStart} AND first_at &lt; #{nextMonthStart}) AS monthCount
+    </select>
+
+    <select id="countTownStats" resultType="java.util.LinkedHashMap">
+        SELECT
+            (SELECT COUNT(1) FROM subsidy_apply
+             WHERE town_code = #{townCode} AND status = 'PENDING_TOWN') AS pendingCount,
+            (SELECT COUNT(1) FROM subsidy_apply
+             WHERE town_code = #{townCode} AND final_at IS NOT NULL
+               AND final_at &gt;= #{todayStart} AND final_at &lt; #{tomorrowStart}) AS todayCount,
+            (SELECT COUNT(1) FROM subsidy_apply
+             WHERE town_code = #{townCode} AND final_at IS NOT NULL
+               AND final_at &gt;= #{monthStart} AND final_at &lt; #{nextMonthStart}) AS monthCount
+    </select>
+</mapper>

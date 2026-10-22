@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiangcetong.ai.mapper.KnowledgeChunkMapper">
+
+    <sql id="Cols">
+        id, document_id, chunk_index, chunk_text, embedding, token_count, created_at
+    </sql>
+
+    <insert id="batchInsert">
+        INSERT INTO knowledge_chunk (document_id, chunk_index, chunk_text, embedding, token_count, created_at)
+        VALUES
+        <foreach collection="list" item="chunk" separator=",">
+            (#{chunk.documentId}, #{chunk.chunkIndex}, #{chunk.chunkText},
+             #{chunk.embedding,jdbcType=VARCHAR}, #{chunk.tokenCount}, NOW())
+        </foreach>
+    </insert>
+
+    <select id="findAll" resultType="com.xiangcetong.ai.entity.KnowledgeChunk">
+        SELECT c.id, c.document_id, d.title AS document_title, c.chunk_index, c.chunk_text,
+               c.embedding, c.token_count, c.created_at
+        FROM knowledge_chunk c
+        LEFT JOIN knowledge_document d ON c.document_id = d.id
+        ORDER BY c.id
+    </select>
+
+    <select id="findByDocumentId" resultType="com.xiangcetong.ai.entity.KnowledgeChunk">
+        SELECT c.id, c.document_id, d.title AS document_title, c.chunk_index, c.chunk_text,
+               c.embedding, c.token_count, c.created_at
+        FROM knowledge_chunk c
+        LEFT JOIN knowledge_document d ON c.document_id = d.id
+        WHERE c.document_id = #{documentId}
+        ORDER BY c.chunk_index
+    </select>
+
+    <delete id="deleteByDocumentId">
+        DELETE FROM knowledge_chunk WHERE document_id = #{documentId}
+    </delete>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO knowledge_chunk (document_id, chunk_index, chunk_text, embedding, token_count, created_at)
+        VALUES (#{documentId}, #{chunkIndex}, #{chunkText}, #{embedding,jdbcType=VARCHAR}, #{tokenCount}, NOW())
+    </insert>
+
+    <delete id="deleteById">
+        DELETE FROM knowledge_chunk WHERE id = #{id}
+    </delete>
+
+</mapper>

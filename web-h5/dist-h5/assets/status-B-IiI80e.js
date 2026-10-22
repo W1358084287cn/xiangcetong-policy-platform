@@ -1,0 +1,1 @@
+var e={DRAFT:`草稿`,PENDING_VILLAGE:`待村级审核`,PENDING_TOWN:`待镇级审核`,APPROVED:`已通过`,REJECTED:`已驳回`,PENDING_DISBURSE:`待发放`,DISBURSED:`已发放`};function t(t,n){return n||e[t]||t||`未知`}export{t};

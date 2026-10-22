@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiangcetong.ai.mapper.AiUsageLogMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ai_usage_log (user_id, username, model, prompt_tokens, completion_tokens, total_tokens, cost)
+        VALUES (#{userId}, #{username}, #{model}, #{promptTokens}, #{completionTokens}, #{totalTokens}, #{cost})
+    </insert>
+
+    <select id="sumToday" resultType="java.util.HashMap">
+        SELECT
+            COALESCE(SUM(total_tokens), 0) AS todayTokens,
+            COALESCE(SUM(cost), 0) AS todayCost,
+            COUNT(*) AS todayCalls
+        FROM ai_usage_log
+        WHERE DATE(created_at) = CURDATE()
+    </select>
+
+</mapper>
