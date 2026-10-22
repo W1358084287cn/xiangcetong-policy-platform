@@ -1,0 +1,1 @@
+import{n as e}from"./request-BQttHdtN.js";function t(t){return e.post(`/auth/login`,t)}function n(t){return e.post(`/auth/register`,t)}function r(t){return e.post(`/auth/reset-password`,t)}function i(t){return e.post(`/auth/password`,t)}export{r as i,t as n,n as r,i as t};

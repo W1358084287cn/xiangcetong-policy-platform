@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.2</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.xiangcetong</groupId>
+    <artifactId>xiangcetong-server</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+    <name>xiangcetong-server</name>
+    <description>乡策通助农扶持政策管理平台后端（Maven 多模块父工程）</description>
+
+    <!--
+      模块划分与依赖方向（只能向下依赖，禁止循环）：
+      xct-common（通用层：返回/异常/分页/上下文/常量/配置）
+        ← xct-log（操作与流程日志）
+        ← xct-user（村民与后台账号）
+          ← xct-policy（政策/收藏/匹配）
+            ← xct-apply（补贴申报与审批）
+        ← xct-auth（登录鉴权，依赖 user/log）
+        ← xct-notice（通知公告）
+        ← xct-file（材料文件存储）
+      xct-boot 聚合全部模块，负责启动与装配（配置类、yml、SQL 均在此）。
+    -->
+    <modules>
+        <module>xct-common</module>
+        <module>xct-log</module>
+        <module>xct-user</module>
+        <module>xct-policy</module>
+        <module>xct-apply</module>
+        <module>xct-auth</module>
+        <module>xct-notice</module>
+        <module>xct-file</module>
+        <module>xct-ai</module>
+        <module>xct-boot</module>
+    </modules>
+
+    <!-- 用 17 字节码，兼容 JDK 17 运行环境 -->
+    <properties>
+        <java.version>17</java.version>
+        <jjwt.version>0.12.6</jjwt.version>
+        <mybatis-starter.version>3.0.3</mybatis-starter.version>
+        <spring-ai.version>1.0.0-M7</spring-ai.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- 内部模块统一版本管理 -->
+            <dependency>
+                <groupId>com.xiangcetong</groupId>
+                <artifactId>xct-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.xiangcetong</groupId>
+                <artifactId>xct-log</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.xiangcetong</groupId>
+                <artifactId>xct-user</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.xiangcetong</groupId>
+                <artifactId>xct-policy</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.xiangcetong</groupId>
+                <artifactId>xct-apply</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.xiangcetong</groupId>
+                <artifactId>xct-auth</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.xiangcetong</groupId>
+                <artifactId>xct-notice</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.xiangcetong</groupId>
+                <artifactId>xct-file</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.xiangcetong</groupId>
+                <artifactId>xct-ai</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <!-- 三方版本统一 -->
+            <dependency>
+                <groupId>org.mybatis.spring.boot</groupId>
+                <artifactId>mybatis-spring-boot-starter</artifactId>
+                <version>${mybatis-starter.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <!-- Spring AI BOM（统一管理 Spring AI 依赖版本） -->
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- 所有子模块共用的测试依赖（JUnit5 + Mockito + AssertJ 等） -->
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <!-- Spring AI Milestone 仓库（正式版发布后可移除） -->
+    <repositories>
+        <repository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+            <snapshots><enabled>false</enabled></snapshots>
+        </repository>
+    </repositories>
+</project>

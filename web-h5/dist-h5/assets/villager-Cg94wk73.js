@@ -1,0 +1,1 @@
+import{n as e}from"./request-BQttHdtN.js";function t(){return e.get(`/villager/profile`)}function n(t){return e.put(`/villager/profile`,t)}function r(t={}){return e.get(`/villager/favorites`,{params:{pageNum:1,pageSize:5,...t}})}export{t as n,n as r,r as t};

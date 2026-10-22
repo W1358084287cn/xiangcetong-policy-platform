@@ -1,0 +1,1 @@
+function e(e,t=`/policies`){let n=window.history.state?.back,r=e.currentRoute.value.fullPath;typeof n==`string`&&n.startsWith(`/`)&&n!==r?e.back():e.replace(t)}export{e as t};

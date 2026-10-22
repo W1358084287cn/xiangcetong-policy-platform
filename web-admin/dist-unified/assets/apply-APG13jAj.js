@@ -1,0 +1,1 @@
+import{t as e}from"./request-KGXITQHz.js";function t(t){return e.get(`/admin/apply`,{params:t})}function n(t,n){return e.post(`/admin/apply/${t}/village-audit`,n)}function r(t,n){return e.post(`/admin/apply/${t}/town-audit`,n)}function i(){return e.get(`/admin/apply/stats`)}function a(t,n){return e.post(`/admin/apply/${t}/disburse`,n)}export{n as a,r as i,t as n,i as r,a as t};

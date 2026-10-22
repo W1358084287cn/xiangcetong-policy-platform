@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiangcetong.ai.mapper.AiConfigMapper">
+
+    <sql id="Cols">
+        id, api_url, api_key, model_name, embedding_url, embedding_key, embedding_model,
+        max_tokens, temperature, platform_url, updated_at
+    </sql>
+
+    <select id="findFirst" resultType="com.xiangcetong.ai.entity.AiConfig">
+        SELECT <include refid="Cols"/> FROM ai_config ORDER BY id LIMIT 1
+    </select>
+
+    <update id="update">
+        UPDATE ai_config
+        SET api_url        = #{apiUrl},
+            api_key        = #{apiKey},
+            model_name     = #{modelName},
+            embedding_url  = #{embeddingUrl},
+            embedding_key  = #{embeddingKey},
+            embedding_model= #{embeddingModel},
+            max_tokens     = #{maxTokens},
+            temperature    = #{temperature},
+            platform_url   = #{platformUrl},
+            updated_at     = NOW()
+        WHERE id = #{id}
+    </update>
+
+</mapper>

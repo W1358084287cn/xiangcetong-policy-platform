@@ -1,0 +1,10 @@
+target/
+uploads/**
+!uploads/.gitkeep
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+*.log
+.DS_Store

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiangcetong.ai.mapper.AiChatLogMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ai_chat_log (user_id, username, phone, question, answer, from_knowledge, model, prompt_tokens, completion_tokens,
+               conversation_id, agent_action, card_data)
+        VALUES (#{userId}, #{username}, #{phone}, #{question}, #{answer}, #{fromKnowledge}, #{model}, #{promptTokens}, #{completionTokens},
+               #{conversationId}, #{agentAction}, #{cardData})
+    </insert>
+
+    <!-- 查询某会话下的消息列表（分页） -->
+    <select id="listByConversationId" resultType="com.xiangcetong.ai.entity.AiChatLog">
+        SELECT id, user_id AS userId, username, phone, question, answer,
+               from_knowledge AS fromKnowledge, model, prompt_tokens AS promptTokens,
+               completion_tokens AS completionTokens, conversation_id AS conversationId,
+               agent_action AS agentAction, card_data AS cardData, created_at AS createdAt
+        FROM ai_chat_log
+        WHERE conversation_id = #{conversationId}
+        ORDER BY created_at ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 会话消息总数 -->
+    <select id="countByConversationId" resultType="long">
+        SELECT COUNT(*) FROM ai_chat_log WHERE conversation_id = #{conversationId}
+    </select>
+
+    <select id="list" resultType="com.xiangcetong.ai.entity.AiChatLog">
+        SELECT id, user_id AS userId, username, phone, question, answer, from_knowledge AS fromKnowledge,
+               model, prompt_tokens AS promptTokens, completion_tokens AS completionTokens, created_at AS createdAt
+        FROM ai_chat_log
+        ORDER BY created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM ai_chat_log
+    </select>
+
+    <!-- 按用户分组查询—管理端列表页（不暴露具体聊天内容） -->
+    <select id="listDistinctUsers" resultType="com.xiangcetong.ai.dto.AiChatUserVO">
+        SELECT
+            acl.user_id       AS userId,
+            acl.username      AS name,
+            acl.phone         AS phone,
+            COUNT(*)          AS chatCount,
+            MAX(acl.created_at) AS lastChatTime,
+            IFNULL(SUM(acl.prompt_tokens + acl.completion_tokens), 0) AS totalTokens
+        FROM ai_chat_log acl
+        <where>
+            <if test="phone != null and phone != ''">
+                acl.phone LIKE CONCAT('%', #{phone}, '%')
+            </if>
+        </where>
+        GROUP BY acl.user_id, acl.username, acl.phone
+        ORDER BY lastChatTime DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countDistinctUsers" resultType="long">
+        SELECT COUNT(DISTINCT acl.user_id)
+        FROM ai_chat_log acl
+        <where>
+            <if test="phone != null and phone != ''">
+                acl.phone LIKE CONCAT('%', #{phone}, '%')
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询某个用户的具体对话记录 -->
+    <select id="listByUserId" resultType="com.xiangcetong.ai.entity.AiChatLog">
+        SELECT id, user_id AS userId, username, phone, question, answer, from_knowledge AS fromKnowledge,
+               model, prompt_tokens AS promptTokens, completion_tokens AS completionTokens, created_at AS createdAt
+        FROM ai_chat_log
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countByUserId" resultType="long">
+        SELECT COUNT(*) FROM ai_chat_log WHERE user_id = #{userId}
+    </select>
+
+    <!-- 回填历史记录中缺失的手机号 -->
+    <update id="backfillPhone">
+        UPDATE ai_chat_log acl
+        INNER JOIN sys_user su ON acl.user_id = su.id
+        SET acl.phone = su.phone
+        WHERE acl.phone IS NULL OR acl.phone = ''
+    </update>
+
+    <!-- 回填历史记录中缺失的用户名 -->
+    <update id="backfillUsername">
+        UPDATE ai_chat_log acl
+        INNER JOIN sys_user su ON acl.user_id = su.id
+        SET acl.username = su.name
+        WHERE acl.username IS NULL OR acl.username = ''
+    </update>
+
+<!-- 删除某会话下所有消息 -->
+    <delete id="deleteByConversationId">
+        DELETE FROM ai_chat_log WHERE conversation_id = #{conversationId}
+    </delete>
+
+</mapper>

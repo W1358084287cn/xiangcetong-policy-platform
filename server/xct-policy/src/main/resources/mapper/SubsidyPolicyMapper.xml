@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiangcetong.policy.mapper.SubsidyPolicyMapper">
+
+    <!-- 含材料/咨询扩展列与匹配扩展条件；Admin 本轮可不在表单编辑全部列，但读写映射需齐全 -->
+    <sql id="Cols">
+        id, title, content, conditions, standard, consult_phone, status,
+        category, target_plant_types, min_area, require_bank_card, region_codes,
+        target_subject_types, require_veteran, require_monitor, min_livestock,
+        require_manure_facility, require_machinery_intent, require_grain_insurance, require_land_cert,
+        valid_from, valid_to,
+        source_org, subsidy_amount_text, deadline_text, consult_info,
+        apply_conditions, material_schema,
+        created_at, updated_at
+    </sql>
+
+    <select id="findById" resultType="com.xiangcetong.policy.entity.SubsidyPolicy">
+        SELECT <include refid="Cols"/> FROM subsidy_policy WHERE id = #{id} LIMIT 1
+    </select>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(1) FROM subsidy_policy
+        <where>
+            <if test="status != null and status != ''">AND status = #{status}</if>
+        </where>
+    </select>
+
+    <select id="list" resultType="com.xiangcetong.policy.entity.SubsidyPolicy">
+        SELECT <include refid="Cols"/> FROM subsidy_policy
+        <where>
+            <if test="status != null and status != ''">AND status = #{status}</if>
+        </where>
+        ORDER BY id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 匹配候选：上架且在有效期内（不按画像过滤） -->
+    <select id="listMatchCandidates" resultType="com.xiangcetong.policy.entity.SubsidyPolicy">
+        SELECT <include refid="Cols"/> FROM subsidy_policy
+        WHERE status = 'ONLINE'
+          AND (valid_from IS NULL OR valid_from &lt;= CURDATE())
+          AND (valid_to IS NULL OR valid_to &gt;= CURDATE())
+        <if test="category != null and category != ''">
+          AND category = #{category}
+        </if>
+        ORDER BY id DESC
+    </select>
+
+    <!--
+      村民画像多条件 WHERE 匹配（替代内存加权打分）：
+      政策字段为空 / 标志未开启 → 不限；有值则必须满足。
+      种养：JSON 数组含 plantCode；地区：有村看村、否则镇、否则县。
+    -->
+    <sql id="ProfileMatchWhere">
+        status = 'ONLINE'
+        AND (valid_from IS NULL OR valid_from &lt;= CURDATE())
+        AND (valid_to IS NULL OR valid_to &gt;= CURDATE())
+        <!-- 种养：无限制 或 JSON 含归一化码 -->
+        AND (
+            target_plant_types IS NULL
+            OR JSON_LENGTH(target_plant_types) = 0
+            OR JSON_CONTAINS(target_plant_types, JSON_QUOTE(#{plantCode}))
+        )
+        <!-- 地区：空不限；有 villages 优先，否则 towns，否则 counties -->
+        AND (
+            region_codes IS NULL
+            OR JSON_TYPE(region_codes) = 'NULL'
+            OR (
+                JSON_LENGTH(IFNULL(JSON_EXTRACT(region_codes, '$.villages'), JSON_ARRAY())) = 0
+                AND JSON_LENGTH(IFNULL(JSON_EXTRACT(region_codes, '$.towns'), JSON_ARRAY())) = 0
+                AND JSON_LENGTH(IFNULL(JSON_EXTRACT(region_codes, '$.counties'), JSON_ARRAY())) = 0
+            )
+            OR (
+                CASE
+                    WHEN JSON_LENGTH(IFNULL(JSON_EXTRACT(region_codes, '$.villages'), JSON_ARRAY())) &gt; 0
+                        THEN JSON_CONTAINS(
+                            JSON_EXTRACT(region_codes, '$.villages'),
+                            JSON_QUOTE(#{villageName}))
+                    WHEN JSON_LENGTH(IFNULL(JSON_EXTRACT(region_codes, '$.towns'), JSON_ARRAY())) &gt; 0
+                        THEN JSON_CONTAINS(
+                            JSON_EXTRACT(region_codes, '$.towns'),
+                            JSON_QUOTE(#{townName}))
+                    WHEN JSON_LENGTH(IFNULL(JSON_EXTRACT(region_codes, '$.counties'), JSON_ARRAY())) &gt; 0
+                        THEN JSON_CONTAINS(
+                            JSON_EXTRACT(region_codes, '$.counties'),
+                            JSON_QUOTE(#{countyName}))
+                    ELSE TRUE
+                END
+            )
+        )
+        <!-- 面积：无门槛 或 村民面积达标 -->
+        AND (
+            min_area IS NULL OR min_area &lt;= 0
+            OR (#{plantArea} IS NOT NULL AND #{plantArea} &gt;= min_area)
+        )
+        <!-- 银行卡：政策要求绑卡时村民须有卡 -->
+        AND (
+            require_bank_card IS NULL OR require_bank_card = 0
+            OR #{hasBankCard} = 1
+        )
+        <!-- 经营主体 -->
+        AND (
+            target_subject_types IS NULL
+            OR JSON_LENGTH(target_subject_types) = 0
+            OR JSON_CONTAINS(target_subject_types, JSON_QUOTE(#{subjectType}))
+        )
+        <!-- 退役军人家庭 -->
+        AND (
+            require_veteran IS NULL OR require_veteran = 0
+            OR #{isVeteranFamily} = 1
+        )
+        <!-- 脱贫监测户 -->
+        AND (
+            require_monitor IS NULL OR require_monitor = 0
+            OR #{isMonitorHousehold} = 1
+        )
+        <!-- 最低存栏 -->
+        AND (
+            min_livestock IS NULL OR min_livestock &lt;= 0
+            OR (#{livestockCount} IS NOT NULL AND #{livestockCount} &gt;= min_livestock)
+        )
+        <!-- 粪污设施 -->
+        AND (
+            require_manure_facility IS NULL OR require_manure_facility = 0
+            OR #{hasManureFacility} = 1
+        )
+        <!-- 购机/报废意向 -->
+        AND (
+            require_machinery_intent IS NULL OR require_machinery_intent = 0
+            OR #{needMachinery} = 1
+        )
+        <!-- 粮食保险 -->
+        AND (
+            require_grain_insurance IS NULL OR require_grain_insurance = 0
+            OR #{hasGrainInsurance} = 1
+        )
+        <!-- 土地承包证 -->
+        AND (
+            require_land_cert IS NULL OR require_land_cert = 0
+            OR #{hasLandCert} = 1
+        )
+    </sql>
+
+    <select id="listMatchByProfile" resultType="com.xiangcetong.policy.entity.SubsidyPolicy">
+        SELECT <include refid="Cols"/> FROM subsidy_policy
+        WHERE
+        <include refid="ProfileMatchWhere"/>
+        <if test="category != null and category != ''">
+            AND category = #{category}
+        </if>
+        <!-- 用户主动筛选种养码：只显示明确标注该类型的政策（不含"不限"的） -->
+        <if test="plantFilter != null and plantFilter != ''">
+            AND JSON_CONTAINS(target_plant_types, JSON_QUOTE(#{plantFilter}))
+        </if>
+        <!-- 用户主动筛选镇：只显示明确限定该镇的政策（不含"不限"的） -->
+        <if test="townFilter != null and townFilter != ''">
+            AND JSON_CONTAINS(
+                JSON_EXTRACT(region_codes, '$.towns'),
+                JSON_QUOTE(#{townFilter}))
+        </if>
+        ORDER BY id DESC
+    </select>
+
+    <select id="countMatchOne" resultType="int">
+        SELECT COUNT(1) FROM subsidy_policy
+        WHERE id = #{policyId}
+          AND
+        <include refid="ProfileMatchWhere"/>
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO subsidy_policy
+        (title, content, conditions, standard, consult_phone, status,
+         category, target_plant_types, min_area, require_bank_card, region_codes,
+         target_subject_types, require_veteran, require_monitor, min_livestock,
+         require_manure_facility, require_machinery_intent, require_grain_insurance, require_land_cert,
+         valid_from, valid_to,
+         source_org, subsidy_amount_text, deadline_text, consult_info,
+         apply_conditions, material_schema,
+         created_at, updated_at)
+        VALUES
+        (#{title}, #{content}, #{conditions}, #{standard}, #{consultPhone}, #{status},
+         #{category}, #{targetPlantTypes,jdbcType=VARCHAR}, #{minArea}, #{requireBankCard},
+         #{regionCodes,jdbcType=VARCHAR},
+         #{targetSubjectTypes,jdbcType=VARCHAR}, #{requireVeteran}, #{requireMonitor}, #{minLivestock},
+         #{requireManureFacility}, #{requireMachineryIntent}, #{requireGrainInsurance}, #{requireLandCert},
+         #{validFrom}, #{validTo},
+         #{sourceOrg,jdbcType=VARCHAR}, #{subsidyAmountText,jdbcType=VARCHAR},
+         #{deadlineText,jdbcType=VARCHAR}, #{consultInfo,jdbcType=VARCHAR},
+         #{applyConditions,jdbcType=VARCHAR}, #{materialSchema,jdbcType=VARCHAR},
+         NOW(), NOW())
+    </insert>
+
+    <update id="update">
+        UPDATE subsidy_policy
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="conditions != null">conditions = #{conditions},</if>
+            <if test="standard != null">standard = #{standard},</if>
+            <if test="consultPhone != null">consult_phone = #{consultPhone},</if>
+            <if test="status != null">status = #{status},</if>
+            <!-- 结构化字段允许置空（不限）；由 Service 在管理端全量编辑时写入 -->
+            <if test="matchFieldsTouched != null and matchFieldsTouched">
+                category = #{category,jdbcType=VARCHAR},
+                target_plant_types = #{targetPlantTypes,jdbcType=VARCHAR},
+                min_area = #{minArea,jdbcType=DECIMAL},
+                require_bank_card = #{requireBankCard,jdbcType=INTEGER},
+                region_codes = #{regionCodes,jdbcType=VARCHAR},
+                target_subject_types = #{targetSubjectTypes,jdbcType=VARCHAR},
+                require_veteran = #{requireVeteran,jdbcType=INTEGER},
+                require_monitor = #{requireMonitor,jdbcType=INTEGER},
+                min_livestock = #{minLivestock,jdbcType=INTEGER},
+                require_manure_facility = #{requireManureFacility,jdbcType=INTEGER},
+                require_machinery_intent = #{requireMachineryIntent,jdbcType=INTEGER},
+                require_grain_insurance = #{requireGrainInsurance,jdbcType=INTEGER},
+                require_land_cert = #{requireLandCert,jdbcType=INTEGER},
+                valid_from = #{validFrom,jdbcType=DATE},
+                valid_to = #{validTo,jdbcType=DATE},
+                material_schema = #{materialSchema,jdbcType=VARCHAR},
+            </if>
+            <if test="sourceOrg != null">source_org = #{sourceOrg},</if>
+            <if test="subsidyAmountText != null">subsidy_amount_text = #{subsidyAmountText},</if>
+            <if test="deadlineText != null">deadline_text = #{deadlineText},</if>
+            <if test="consultInfo != null">consult_info = #{consultInfo},</if>
+            <if test="applyConditions != null">apply_conditions = #{applyConditions},</if>
+            updated_at = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE subsidy_policy SET status = #{status}, updated_at = NOW() WHERE id = #{id}
+    </update>
+
+    <!-- 模糊搜索：关键词匹配标题或正文，仅上架政策 -->
+    <select id="countSearch" resultType="long">
+        SELECT COUNT(1) FROM subsidy_policy
+        WHERE status = 'ONLINE'
+          AND (title LIKE CONCAT('%', #{keyword}, '%')
+               OR content LIKE CONCAT('%', #{keyword}, '%'))
+    </select>
+
+    <select id="search" resultType="com.xiangcetong.policy.entity.SubsidyPolicy">
+        SELECT <include refid="Cols"/> FROM subsidy_policy
+        WHERE status = 'ONLINE'
+          AND (title LIKE CONCAT('%', #{keyword}, '%')
+               OR content LIKE CONCAT('%', #{keyword}, '%'))
+        ORDER BY id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+</mapper>

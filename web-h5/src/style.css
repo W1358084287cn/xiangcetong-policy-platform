@@ -1,0 +1,252 @@
+/* 乡策通 H5：农绿品牌 + 适老化 + 麦田风 */
+:root {
+  --xct-green: #65a30d;
+  --xct-green-deep: #4d7c0f;
+  --xct-green-soft: #dcfce7;
+  --xct-orange: #d97706;
+  --xct-bg: linear-gradient(170deg, #fffbeb 0%, #fef3c7 40%, #f0fdf4 100%);
+  /* 正文次要色：比 #888 更深，适老可读 */
+  --xct-color-muted: #78350f;
+  --xct-color-text: #451a03;
+
+  /* 页面级字号令牌（随 data-font 抬高） */
+  --xct-fs-title: 1.25rem;
+  --xct-fs-body: 1rem;
+  --xct-fs-tip: 0.9375rem;
+  --xct-fs-meta: 0.875rem;
+  --xct-hit-min: 48px;
+
+  /* 卡片与圆角：Organic Biophilic (Impeccable 规范) */
+  --xct-radius: 24px;
+  --xct-radius-sm: 16px;
+  --xct-card-bg: rgba(255, 255, 255, 0.7);
+  --xct-card-border: 1px solid rgba(255, 255, 255, 0.6);
+  --xct-card-shadow: 0 8px 32px rgba(217, 119, 6, 0.05);
+  --xct-card-shadow-lg: 0 12px 40px rgba(217, 119, 6, 0.08);
+  --xct-line: rgba(217, 119, 6, 0.1);
+
+  /* 语义软色：统一调和至 麦田色系 */
+  --xct-amber: #d97706; 
+  --xct-amber-soft: #fef3c7;
+  --xct-blue: #0369a1;
+  --xct-blue-soft: #e0f2fe;
+  --xct-red: #b91c1c;
+  --xct-red-soft: #fee2e2;
+  --xct-gold: #b45309;
+  --xct-gold-soft: #ffedd5;
+
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--xct-color-text);
+  background: var(--xct-bg);
+  background-attachment: fixed;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+
+  /* Vant 主色与默认可读字号：适配 Organic 主色 */
+  --van-primary-color: #d97706;
+  --van-success-color: #65a30d;
+  --van-font-size-xs: 12px;
+  --van-font-size-sm: 14px;
+  --van-font-size-md: 16px;
+  --van-font-size-lg: 18px;
+  --van-button-default-height: 44px;
+  --van-button-normal-font-size: 16px;
+  --van-button-large-height: 50px;
+  --van-button-border-radius: var(--xct-radius); 
+  --van-cell-font-size: 16px;
+  --van-cell-line-height: 28px;
+  --van-cell-vertical-padding: 14px; 
+  --van-field-label-width: 7.2em;
+  --van-tabbar-item-font-size: 13px;
+  --van-tabbar-height: 60px; 
+  --van-tabbar-item-active-color: #d97706;
+  --van-nav-bar-title-font-size: 17px;
+  --van-dialog-font-size: 16px;
+  --van-dialog-border-radius: var(--xct-radius); 
+  --van-toast-font-size: 15px;
+  --van-toast-radius: 12px;
+  --van-nav-bar-background: rgba(255, 253, 245, 0.85);
+  --van-nav-bar-icon-color: #78350f;
+  --van-nav-bar-text-color: #78350f;
+  --van-nav-bar-title-text-color: #451a03;
+  /* 2026-10-17 修复「文字重叠」：tabbar 背景显式声明为不透明，
+     防止滚动内容从底部栏下透出与 Tab 文字叠在一起 */
+  --van-tabbar-background: #fffdf5;
+}
+
+/* 2026-10-17 修复「文字重叠」：导航栏是 85% 半透明背景，列表滚动时
+   卡片标题会从导航栏下透出来，与「政策匹配」标题叠字。
+   补上毛玻璃模糊后，透出的内容被虚化，视觉上彻底分离。 */
+.van-nav-bar {
+  /* 注意顺序：标准属性放最后，防止 CSS 压缩器去重时把标准属性吞掉 */
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  font-size: 16px;
+  background: transparent;
+}
+html {
+  background: var(--xct-bg);
+  background-attachment: fixed;
+}
+
+a {
+  color: var(--xct-green-deep);
+  text-decoration: none;
+}
+
+/* 大字：抬高 Vant 与页面令牌 */
+:root[data-font='large'] {
+  --xct-fs-title: 1.35rem;
+  --xct-fs-body: 1.125rem;
+  --xct-fs-tip: 1.05rem;
+  --xct-fs-meta: 0.95rem;
+  --xct-hit-min: 50px;
+
+  --van-font-size-xs: 13px;
+  --van-font-size-sm: 15px;
+  --van-font-size-md: 18px;
+  --van-font-size-lg: 20px;
+  --van-button-default-height: 48px;
+  --van-button-normal-font-size: 17px;
+  --van-button-large-height: 54px;
+  --van-cell-font-size: 18px;
+  --van-cell-line-height: 30px;
+  --van-cell-vertical-padding: 14px;
+  --van-field-label-width: 7.8em;
+  --van-tabbar-item-font-size: 15px;
+  --van-tabbar-height: 60px;
+  --van-nav-bar-title-font-size: 19px;
+  --van-dialog-font-size: 18px;
+  --van-toast-font-size: 16px;
+}
+
+/* 特大 */
+:root[data-font='xlarge'] {
+  --xct-fs-title: 1.5rem;
+  --xct-fs-body: 1.25rem;
+  --xct-fs-tip: 1.125rem;
+  --xct-fs-meta: 1rem;
+  --xct-hit-min: 52px;
+
+  --van-font-size-xs: 14px;
+  --van-font-size-sm: 16px;
+  --van-font-size-md: 20px;
+  --van-font-size-lg: 22px;
+  --van-button-default-height: 52px;
+  --van-button-normal-font-size: 19px;
+  --van-button-large-height: 56px;
+  --van-cell-font-size: 20px;
+  --van-cell-line-height: 32px;
+  --van-cell-vertical-padding: 16px;
+  --van-field-label-width: 8.4em;
+  --van-tabbar-item-font-size: 16px;
+  --van-tabbar-height: 64px;
+  --van-nav-bar-title-font-size: 21px;
+  --van-dialog-font-size: 19px;
+  --van-toast-font-size: 17px;
+}
+
+/*
+ * 不再对 #app 使用 zoom：会与抬高后的 Vant 字号叠加，导致步骤条/表单标签与正文叠字。
+ * 页面标题/提示用 var(--xct-fs-*)；根 html fontSize 由 FontSizeFab 同步。
+ */
+
+/* 高对比：黑字 + 浅黄底，提升老年弱视可读性（data-contrast=high） */
+:root[data-contrast='high'] {
+  --xct-bg: #fff59d;
+  --xct-color-text: #000;
+  --xct-color-muted: #111;
+  --xct-green: #004d00;
+  --xct-green-deep: #000;
+  --xct-green-soft: #ffe082;
+  --xct-orange: #b36b00;
+  --van-primary-color: #000;
+  --van-success-color: #004d00;
+  --van-tabbar-item-active-color: #000;
+  --van-button-primary-background: #000;
+  --van-button-primary-border-color: #000;
+  --van-button-primary-color: #ffeb3b;
+
+  /* 高对比下的卡片与语义色：白底黑框、去阴影、软色统一为警示黄 */
+  --xct-card-bg: #fff;
+  --xct-card-border: 2px solid #000;
+  --xct-card-shadow: none;
+  --xct-card-shadow-lg: none;
+  --xct-line: #000;
+  --xct-amber: #000;
+  --xct-amber-soft: #ffe082;
+  --xct-blue: #000;
+  --xct-blue-soft: #ffe082;
+  --xct-red: #000;
+  --xct-red-soft: #ffe082;
+  --xct-gold: #000;
+  --xct-gold-soft: #ffe082;
+  color: #000;
+  background-color: #fff59d;
+}
+
+:root[data-contrast='high'] body,
+:root[data-contrast='high'] #app {
+  background: #fff59d;
+  color: #000;
+}
+
+:root[data-contrast='high'] a {
+  color: #000;
+  text-decoration: underline;
+}
+
+/* ===== 认证页（登录/注册/忘记密码）底部文字入口 =====
+   纯文字链接触控区默认仅 ~21px，老人难以点中；统一撑到 ≥48px 并加大可点面积。 */
+.xct-auth-links {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 10px;
+}
+.xct-auth-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--xct-hit-min, 48px);
+  padding: 0 14px;
+  color: var(--xct-green-deep, #4d7c0f);
+  font-weight: 600;
+  border-radius: 12px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+.xct-auth-link:active {
+  background: var(--xct-green-soft, #dcfce7);
+  opacity: 0.85;
+}
+.xct-auth-sep {
+  display: inline-flex;
+  align-items: center;
+  color: rgba(120, 53, 15, 0.35);
+  user-select: none;
+}
+:root[data-contrast='high'] .xct-auth-link {
+  border: 2px solid #000;
+  background: #fff;
+  color: #000;
+}

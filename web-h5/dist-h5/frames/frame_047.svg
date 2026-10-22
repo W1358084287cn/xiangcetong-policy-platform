@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 389.61038961038963 389.61038961038963" width="750" height="1334" preserveAspectRatio="xMidYMid slice">
+    <rect width="100%" height="100%" fill="#e8f5e9" />
+    <path d="M0,0 L389.61038961038963,0 L389.61038961038963,194.80519480519482 C194.80519480519482,311.6883116883117 0,155.84415584415586 0,0" fill="#c8e6c9" />
+    <path d="M0,389.61038961038963 L389.61038961038963,389.61038961038963 L389.61038961038963,194.80519480519482 C194.80519480519482,311.6883116883117 0,155.84415584415586 0,389.61038961038963" fill="#a5d6a7" />
+    <pattern id="grid" width="19.480519480519483" height="19.480519480519483" patternUnits="userSpaceOnUse">
+      <path d="M 19.480519480519483 0 L 0 0 0 19.480519480519483" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="0.38961038961038963"/>
+    </pattern>
+    <rect width="100%" height="100%" fill="url(#grid)" />
+    <text x="50%" y="50%" font-family="sans-serif" font-size="15.584415584415586" fill="#2e8b57" text-anchor="middle">Frame 47</text>
+  </svg>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiangcetong.log.mapper.OperationLogMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO operation_log (user_id, action, target, detail, created_at)
+        VALUES (#{userId}, #{action}, #{target}, #{detail}, NOW())
+    </insert>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(1) FROM operation_log
+        <where>
+            <if test="action != null and action != ''">AND action = #{action}</if>
+            <if test="userId != null">AND user_id = #{userId}</if>
+        </where>
+    </select>
+
+    <select id="list" resultType="com.xiangcetong.log.entity.OperationLog">
+        SELECT o.id, o.user_id, o.action, o.target, o.detail, o.created_at,
+               u.name AS user_name
+        FROM operation_log o
+        LEFT JOIN sys_user u ON u.id = o.user_id
+        <where>
+            <if test="action != null and action != ''">AND o.action = #{action}</if>
+            <if test="userId != null">AND o.user_id = #{userId}</if>
+        </where>
+        ORDER BY o.created_at DESC, o.id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+</mapper>
